@@ -81,20 +81,25 @@ namespace BzAB
             worker.OutputDataReceived += new DataReceivedEventHandler((sender, e) =>
             {
                 // Prepend line numbers to each line of the output. 
-                if (!String.IsNullOrEmpty(e.Data))
-                {
-                    string[] items = Regex.Split(e.Data, "\\s+");
-                    switch (items[0])
-                    {
-                        case "?":
-                            added.Add(items[1]);
-                            break;
+                if (String.IsNullOrEmpty(e.Data))
+                    return;
+                                
+                Match m = Regex.Match(e.Data, @"^(.)\s+([\w \\\(\).]+)");
 
-                        case "!":
-                            deleted.Add(items[1]);
-                            break;
-                    }
+                if (!m.Success)
+                    return;
+                              
+                switch (m.Groups[1].Value)
+                {
+                    case "?":
+                        added.Add(m.Groups[2].Value);
+                        break;
+
+                    case "!":
+                        deleted.Add(m.Groups[2].Value);
+                        break;
                 }
+                                
             });
 
             worker.BeginOutputReadLine();
